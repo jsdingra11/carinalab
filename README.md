@@ -1,1 +1,1 @@
-# carinalab
+# interactive-astronomy
