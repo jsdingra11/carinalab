@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Small-Angle Approximation Demonstrator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tauri&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #a0a0a0; /* Classic Windows gray background */
+            font-family: 'Tauri', sans-serif; /* A font that resembles Tahoma/Verdana */
+        }
+        .xp-window {
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #404040;
+            border-bottom: 2px solid #404040;
+            background-color: #C0C0C0; /* Classic windows gray */
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        .xp-title-bar {
+            background: #000080; /* Solid dark blue title bar */
+            padding: 4px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        .xp-button {
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-right: 1px solid #404040;
+            border-bottom: 1px solid #404040;
+            background-color: #C0C0C0;
+            padding: 2px 12px;
+            box-shadow: 1px 1px 1px #808080;
+        }
+        .xp-button:active {
+            border-top: 1px solid #404040;
+            border-left: 1px solid #404040;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+            box-shadow: none;
+        }
+        .xp-input {
+            border-top: 1px solid #404040;
+            border-left: 1px solid #404040;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+            background-color: #fff;
+        }
+        .formula-font {
+            font-family: 'Times New Roman', Times, serif;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 5px;
+            background: #808080;
+            outline: none;
+            border-right: 1px solid #C0C0C0;
+            border-bottom: 1px solid #C0C0C0;
+            border-left: 1px solid #404040;
+            border-top: 1px solid #404040;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #C0C0C0;
+            cursor: pointer;
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-right: 1px solid #404040;
+            border-bottom: 1px solid #404040;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-5xl rounded-sm shadow-2xl xp-window">
+        <!-- Header -->
+        <header class="xp-title-bar">
+            <h1>Small-Angle Approximation Demonstrator</h1>
+             <div>
+                <button id="aboutBtn" class="text-sm font-medium text-white hover:text-yellow-300 focus:outline-none mr-2">about</button>
+                <button id="resetBtn" class="text-sm font-medium text-white hover:text-yellow-300 focus:outline-none">reset</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="p-6 rounded-b-sm">
+            <!-- Canvas and Formula Container -->
+            <div class="bg-black border-t-2 border-l-2 border-gray-700 border-b-2 border-r-2 border-white p-4">
+                <!-- Formula Display -->
+                <div id="formulaDisplay" class="text-center text-xl md:text-2xl mb-4 text-white formula-font">
+                    α = 206,265 × <frac><span id="diameterText">2.0</span> / <span id="distanceText">38.0</span></frac> = <span id="resultText">10856.1</span> arcsec
+                </div>
+                <!-- Canvas for Simulation -->
+                <div class="overflow-hidden">
+                    <canvas id="simulationCanvas"></canvas>
+                </div>
+            </div>
+
+
+            <!-- Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                <!-- Distance Control -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-4">
+                        <label for="distanceSlider" class="font-medium text-black">distance:</label>
+                        <input type="number" id="distanceInput" class="w-24 p-1 rounded-sm text-center xp-input" value="38.0" step="0.1">
+                        <span class="text-black">units</span>
+                    </div>
+                    <input type="range" id="distanceSlider" min="10" max="100" value="38" step="0.1" class="w-full">
+                </div>
+
+                <!-- Diameter Control -->
+                <div class="space-y-2">
+                    <div class="flex items-center gap-4">
+                        <label for="diameterSlider" class="font-medium text-black">diameter:</label>
+                        <input type="number" id="diameterInput" class="w-24 p-1 rounded-sm text-center xp-input" value="2.0" step="0.1">
+                        <span class="text-black">units</span>
+                    </div>
+                    <input type="range" id="diameterSlider" min="0.5" max="5" value="2" step="0.1" class="w-full">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+        <div class="xp-window max-w-md w-full relative">
+            <header class="xp-title-bar">
+                <h2>About</h2>
+                <button id="closeModalBtn" class="text-white font-bold text-lg leading-none">&times;</button>
+            </header>
+            <div class="p-6">
+                <p class="text-black mb-4">
+                    This simulation demonstrates the small-angle approximation, a useful formula in astronomy and physics for relating an object's linear size, its distance, and its angular size in the sky.
+                </p>
+                <p class="text-black mb-4 formula-font">
+                    α (arcsec) = 206,265 × (diameter / distance)
+                </p>
+                <p class="text-black">
+                    The number 206,265 is the approximate number of arcseconds in one radian.
+                </p>
+                <br>
+                <p>Made by Carina Lab.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const distanceSlider = document.getElementById('distanceSlider');
+        const diameterSlider = document.getElementById('diameterSlider');
+        const distanceInput = document.getElementById('distanceInput');
+        const diameterInput = document.getElementById('diameterInput');
+
+        const diameterText = document.getElementById('diameterText');
+        const distanceText = document.getElementById('distanceText');
+        const resultText = document.getElementById('resultText');
+        
+        const resetBtn = document.getElementById('resetBtn');
+        const aboutBtn = document.getElementById('aboutBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const aboutModal = document.getElementById('aboutModal');
+
+        
+        // --- Observer Image (Local PNG) ---
+        const observerImage = new Image();
+        observerImage.src = "../assets/man.png"; // Make sure the PNG file is in the same folder as your HTML
+
+        // --- Initial State ---
+        const initialState = {
+            distance: 38.0,
+            diameter: 2.0,
+        };
+
+        // --- Canvas Sizing and Drawing ---
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = Math.min(container.clientWidth * 0.4, 300); // Maintain an aspect ratio
+            draw();
+        }
+
+        function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#FFFF00';
+            ctx.fillStyle = '#FFFFAA';
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function draw() {
+            if (!ctx) return;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const distance = parseFloat(distanceSlider.value);
+            const diameter = parseFloat(diameterSlider.value);
+
+            // --- Define visual parameters ---
+            const observerX = canvas.width * 0.1;
+            const observerY = canvas.height * 0.9; // Adjusted for new sprite
+            const observerHeight = canvas.height * 0.5;
+            const observerWidth = observerHeight * (64 / 100); // Use aspect ratio of SVG
+
+            const eyeX = observerX + 10; // Approximate eye position
+            const eyeY = observerY - observerHeight * 0.8;
+
+            const maxDist = parseFloat(distanceSlider.max);
+            const minDist = parseFloat(distanceSlider.min);
+            const objectX = observerX + 80 + ((canvas.width - observerX - 120) * (distance - minDist) / (maxDist - minDist));
+            
+            const maxDiam = parseFloat(diameterSlider.max);
+            const minDiam = parseFloat(diameterSlider.min);
+            // Reduced the multipliers to make the star visually smaller
+            const objectRadius = (canvas.height * 0.02) + (canvas.height * 0.08) * (diameter - minDiam) / (maxDiam - minDiam);
+            
+            const centerY = canvas.height / 2;
+
+            ctx.save();  // Save the canvas state
+
+// Move to the drawing origin, flip horizontally
+ctx.translate(observerX + observerWidth / 2, observerY - observerHeight);
+ctx.scale(-1, 1);  // Horizontal mirror
+
+// Draw the image from mirrored origin
+ctx.drawImage(observerImage, 0, 0, observerWidth, observerHeight);
+
+ctx.restore();  // Restore canvas to original state
+
+
+            // 2. Draw Star
+            drawStar(objectX, centerY, 5, objectRadius, objectRadius / 2);
+
+            // 3. Draw Angle Lines (Line of Sight)
+            ctx.beginPath();
+            ctx.moveTo(eyeX, eyeY);
+            ctx.lineTo(objectX, centerY - objectRadius);
+            ctx.moveTo(eyeX, eyeY);
+            ctx.lineTo(objectX, centerY + objectRadius);
+            ctx.strokeStyle = 'rgba(200, 200, 200, 0.6)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dashes
+
+            const arcCenterX = eyeX + 30; // shifted right more
+const arcRadius = 40;
+const angle = Math.atan2(objectRadius, objectX - eyeX);
+
+ctx.beginPath();
+ctx.arc(arcCenterX, eyeY, arcRadius, -angle, angle);
+ctx.strokeStyle = '#FFFFFF';
+ctx.lineWidth = 1.5;
+ctx.stroke();
+
+ctx.font = '16px "Times New Roman"';
+ctx.fillStyle = '#FFFFFF';
+ctx.fillText('α', arcCenterX + arcRadius + 5, eyeY + 5);
+
+        }
+
+        // --- Calculation and UI Update ---
+        function updateSimulation() {
+            const distance = parseFloat(distanceSlider.value);
+            const diameter = parseFloat(diameterSlider.value);
+
+            distanceInput.value = distance.toFixed(1);
+            diameterInput.value = diameter.toFixed(1);
+
+            const result = 206265 * (diameter / distance);
+
+            distanceText.textContent = distance.toFixed(1);
+            diameterText.textContent = diameter.toFixed(1);
+            resultText.textContent = result.toLocaleString('en-US', { maximumFractionDigits: 1 });
+
+            draw();
+        }
+        
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            distanceSlider.addEventListener('input', updateSimulation);
+            diameterSlider.addEventListener('input', updateSimulation);
+
+            distanceInput.addEventListener('change', () => {
+                let val = parseFloat(distanceInput.value);
+                if (isNaN(val)) val = initialState.distance;
+                val = Math.max(parseFloat(distanceSlider.min), Math.min(parseFloat(distanceSlider.max), val));
+                distanceSlider.value = val;
+                updateSimulation();
+            });
+
+            diameterInput.addEventListener('change', () => {
+                let val = parseFloat(diameterInput.value);
+                if (isNaN(val)) val = initialState.diameter;
+                val = Math.max(parseFloat(diameterSlider.min), Math.min(parseFloat(diameterSlider.max), val));
+                diameterSlider.value = val;
+                updateSimulation();
+            });
+
+            resetBtn.addEventListener('click', () => {
+                distanceSlider.value = initialState.distance;
+                diameterSlider.value = initialState.diameter;
+                updateSimulation();
+            });
+            
+            aboutBtn.addEventListener('click', () => aboutModal.classList.remove('hidden'));
+            closeModalBtn.addEventListener('click', () => aboutModal.classList.add('hidden'));
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) {
+                    aboutModal.classList.add('hidden');
+                }
+            });
+
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        // --- Initialization ---
+        // Since the image is embedded, we can call setup right away.
+        // Using onload is still best practice in case of any delay.
+        observerImage.onload = () => {
+            setupEventListeners();
+            resizeCanvas();
+        };
+        observerImage.onerror = () => {
+            // This is now a very unlikely fallback.
+            console.error("Embedded observer image failed to load.");
+            setupEventListeners();
+            resizeCanvas();
+        };
+
+    </script>
+</body>
+</html>
