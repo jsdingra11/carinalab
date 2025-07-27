@@ -3,29 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carina Lab | Interactive Astronomy Simulations for Education</title>
-  <meta name="description" content="Explore free, interactive astronomy simulations for educational use. Carina Lab provides JavaScript-based tools to visualize celestial mechanics, lookback time, small-angle approximation, and more." />
-  <meta name="keywords" content="Astronomy Simulations, Interactive Space Tools, Educational Astronomy, Lookback Time Simulator, Small-Angle Approximation, JavaScript Astronomy Animations" />
+  <!-- SEO: Optimized title for conciseness and keyword relevance. -->
+  <title>Carina Lab | Free Interactive Astronomy Simulations</title>
+  
+  <!-- SEO: Optimized description to be under 160 characters for better SERP display. -->
+  <meta name="description" content="Carina Lab offers free, interactive astronomy simulations for education. Visualize celestial mechanics, lookback time, and ancient astronomy concepts." />
+  
+  <!-- SEO: Keywords are less critical for modern SEO but retained for completeness. -->
+  <meta name="keywords" content="Astronomy Simulations, Interactive Space Tools, Educational Astronomy, Lookback Time Simulator, Small-Angle Approximation, JavaScript Astronomy Animations, Celestial Mechanics" />
   <meta name="author" content="Carina Lab Team" />
+  
+  <!-- SEO: Canonical URL is crucial for preventing duplicate content issues. -->
   <link rel="canonical" href="https://carina.galamo.org/" />
 
-  <!-- Open Graph for Social Media -->
-  <meta property="og:title" content="Carina Lab - Interactive Astronomy Simulations" />
+  <!-- Open Graph for Social Media Sharing -->
+  <meta property="og:title" content="Carina Lab - Free Interactive Astronomy Simulations" />
   <meta property="og:description" content="Open-source astronomy simulations for education. Visualize celestial motion, cosmology, and more." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://carina.galamo.org/" />
   <meta property="og:image" content="https://carina.galamo.org/assets/logo.png" />
+  <meta property="og:site_name" content="Carina Lab" />
 
-  <!-- Twitter Card -->
+  <!-- Twitter Card for Social Media Sharing -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Carina Lab - Interactive Astronomy Simulations" />
+  <meta name="twitter:title" content="Carina Lab - Free Interactive Astronomy Simulations" />
   <meta name="twitter:description" content="Open-source astronomy simulations for students and enthusiasts. Free, educational, and interactive." />
   <meta name="twitter:image" content="https://carina.galamo.org/assets/logo.png" />
 
   <!-- Favicon -->
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon" />
 
-  <!-- Structured Data (JSON-LD) -->
+  <!-- SEO: Enhanced Structured Data (JSON-LD) for Rich Snippets -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -33,13 +41,24 @@
     "name": "Carina Lab",
     "url": "https://carina.galamo.org",
     "logo": "https://carina.galamo.org/assets/logo.png",
-    "description": "Carina Lab is an open-source astronomy education project offering interactive simulations and animations for learning celestial physics and cosmology.",
+    "description": "Carina Lab is an open-source astronomy education project offering free, interactive simulations and animations for learning celestial physics and cosmology.",
+    "founder": {
+      "@type": "Person",
+      "name": "J.S. Dingra",
+      "url": "https://github.com/jsdingra11"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "technical support",
+      "url": "https://github.com/jsdingra11/carinalab/issues"
+    },
     "sameAs": [
-      "https://github.com/jsdingra11/carinalab",
+      "https://github.com/jsdingra11/carinalab"
     ]
   }
   </script>
   <style>
+    /* Basic styling for the page */
     * {
       margin: 0;
       padding: 0;
@@ -53,11 +72,13 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      padding: 20px;
     }
 
     /* XP WINDOW FRAME */
     .xp-window {
-      width: 800px;
+      width: 100%;
+      max-width: 800px;
       border: 2px solid #000080;
       box-shadow: 4px 4px 12px rgba(0,0,0,0.5);
       background-color: #d4d0c8;
@@ -79,24 +100,6 @@
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-
-    .title-bar-buttons {
-      display: flex;
-      gap: 3px;
-    }
-
-    .title-bar-buttons div {
-      width: 16px;
-      height: 16px;
-      background-color: #c0c0c0;
-      border: 1px solid #808080;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
-      cursor: pointer;
     }
 
     /* TOOLBAR */
@@ -175,6 +178,35 @@
       color: #333;
       margin-top: 20px;
     }
+
+    /* Marquee Styling */
+    .marquee-container {
+      background-color: #000080;
+      color: #ffff00;
+      font-family: 'Lucida Console', Monaco, monospace;
+      padding: 6px 10px;
+      border: 2px inset #fff;
+      box-shadow: 2px 2px 3px #444;
+      margin: 10px auto;
+      width: 95%;
+      height: 30px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .marquee-text {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      animation: scroll-left 15s linear infinite;
+      font-size: 14px;
+    }
+
+    @keyframes scroll-left {
+      0%   { left: 100%; }
+      100% { left: -120%; } /* Adjusted for longer text */
+    }
   </style>
 </head>
 <body>
@@ -182,122 +214,88 @@
 
     <!-- Title Bar -->
     <div class="title-bar">
-      <span>
-        Carina Lab - Astronomy Simulations
-      </span>
-      <!--<div class="title-bar-buttons">
-        <div>_</div>
-        <div>▢</div>
-        <div>X</div>
-      </div>-->
+      <span>Carina Lab - Astronomy Simulations</span>
     </div>
 
     <!-- Toolbar -->
     <div id="toolbar">
-      <a href="#">About</a>
-      <a href="#">Team</a>
-      <a href="https://github.com/jsdingra11/carinalab" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="#" title="Learn more about the Carina Lab project">About</a>
+      <a href="#" title="Meet the Carina Lab team">Team</a>
+      <a href="https://github.com/jsdingra11/carinalab" target="_blank" rel="noopener noreferrer" title="View the source code on GitHub">GitHub</a>
     </div>
-<div style="
-  background-color: #000080;
-  color: #ffff00;
-  font-family: 'Lucida Console', Monaco, monospace;
-  padding: 6px 10px;
-  border: 2px inset #fff;
-  box-shadow: 2px 2px 3px #444;
-  margin: 10px auto;
-  width: 90%;
-  max-width: 800px;
-  height: 30px; /* Set fixed height */
-  overflow: hidden;
-  position: relative;
-">
-  <div style="
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    white-space: nowrap;
-    animation: scroll-left 12s linear infinite;
-    font-size: 14px;
-  ">
-    🚧 Website/Simulation are under construction... Please check back soon! 🚧
-  </div>
-</div>
 
-<style>
-@keyframes scroll-left {
-  0%   { left: 100%; }
-  100% { left: -100%; }
-}
-</style>
+    <!-- Marquee Announcement -->
+    <div class="marquee-container">
+      <div class="marquee-text">
+        🚧 Website and simulations are under active construction... Please check back soon for updates! 🚧
+      </div>
+    </div>
 
     <!-- Main Content -->
     <div id="container">
       <h1>Carina Lab Astronomy Simulations and Animations</h1>
 
-      <p>This is an open-source astronomy resource providing interactive educational tools. All simulations are written in JavaScript. For more information or to contribute, visit our <a href="https://github.com/CarinaLabApps">GitHub repository</a>.</p>
+      <p>This is an open-source astronomy resource providing interactive educational tools. All simulations are written in JavaScript. For more information or to contribute, visit our <a href="https://github.com/CarinaLabApps" title="Contribute to Carina Lab on GitHub">GitHub repository</a>.</p>
 
       <hr>
-<h2>Introductory Concepts</h2>
-<ul>
-  <li style="position: relative;">
-    <a href="Introductory Concepts/Lookback Time Simulator/index.html"
-       onmouseover="document.getElementById('preview-lts').style.display='block'"
-       onmouseout="document.getElementById('preview-lts').style.display='none'">
-      Lookback Time Simulator
-    </a>
-    <img id="preview-lts" src="assets/preview-lts.png"
-         style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
-  </li>
-</ul>
-<hr>
-<h2>Basic Motions & Ancient Astronomy</h2>
-<ul>
-  <li style="position: relative;">
-    <a href="Introductory Concepts/Small-Angle Approximation Demonstrator/index.html"
-       onmouseover="document.getElementById('preview-saad').style.display='block'"
-       onmouseout="document.getElementById('preview-saad').style.display='none'">
-      Small-Angle Approximation Demonstrator
-    </a>
-    <img id="preview-saad" src="assets/saad.png"
-         style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
-  </li>
-    <li style="position: relative;">
-    <a href="Introductory Concepts/Heliacal Rising Simulator/index.html"
-       onmouseover="document.getElementById('preview-heli').style.display='block'"
-       onmouseout="document.getElementById('preview-heli').style.display='none'">
-      Heliacal Rising Simulator
-    </a>
-    <img id="preview-heli" src="assets/heli.png"
-         style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
-  </li>
-  <li style="position: relative;">
-    <a href="Introductory Concepts/Big Dipper Clock/index.html"
-       onmouseover="document.getElementById('preview-bigdip').style.display='block'"
-       onmouseout="document.getElementById('preview-bigdip').style.display='none'">
-      Big Dipper Clock
-    </a>
-    <img id="preview-bigdip" src="assets/bigdip.png"
-         style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
-  </li>
-</ul>
-
-
-
-      <hr>
-
-      <h2>NAAP Simulations</h2>
+      <h2>Introductory Concepts</h2>
       <ul>
-        <li><a href="#">Lunar Phase Simulator</a></li>
-        <li><a href="#">Planetary Orbit Simulator</a></li>
-        <li><a href="#">Stellar Parallax Demonstrator</a></li>
-        <li><a href="#">Blackbody Spectrum Viewer</a></li>
+        <li style="position: relative;">
+          <a href="Introductory Concepts/Lookback Time Simulator/index.html"
+             onmouseover="document.getElementById('preview-lts').style.display='block'"
+             onmouseout="document.getElementById('preview-lts').style.display='none'">
+            Lookback Time Simulator
+          </a>
+          <!-- SEO: Added descriptive alt text for accessibility and image search. -->
+          <img id="preview-lts" src="assets/preview-lts.png"
+               alt="Preview of the Lookback Time Simulator showing light travel from a galaxy."
+               style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
+        </li>
+      </ul>
+      <hr>
+      <h2>Basic Motions & Ancient Astronomy</h2>
+      <ul>
+        <li style="position: relative;">
+          <a href="Introductory Concepts/Small-Angle Approximation Demonstrator/index.html"
+             onmouseover="document.getElementById('preview-saad').style.display='block'"
+             onmouseout="document.getElementById('preview-saad').style.display='none'">
+            Small-Angle Approximation Demonstrator
+          </a>
+          <!-- SEO: Added descriptive alt text for accessibility and image search. -->
+          <img id="preview-saad" src="assets/saad.png"
+               alt="Preview of the Small-Angle Approximation Demonstrator."
+               style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
+        </li>
+        <li style="position: relative;">
+          <a href="Introductory Concepts/Heliacal Rising Simulator/index.html"
+             onmouseover="document.getElementById('preview-heli').style.display='block'"
+             onmouseout="document.getElementById('preview-heli').style.display='none'">
+            Heliacal Rising Simulator
+          </a>
+          <!-- SEO: Added descriptive alt text for accessibility and image search. -->
+          <img id="preview-heli" src="assets/heli.png"
+               alt="Preview of the Heliacal Rising Simulator showing a star rising before the sun."
+               style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
+        </li>
+        <li style="position: relative;">
+          <a href="Introductory Concepts/Big Dipper Clock/index.html"
+             onmouseover="document.getElementById('preview-bigdip').style.display='block'"
+             onmouseout="document.getElementById('preview-bigdip').style.display='none'">
+            Big Dipper Clock
+          </a>
+          <!-- SEO: Added descriptive alt text for accessibility and image search. -->
+          <img id="preview-bigdip" src="assets/bigdip.png"
+               alt="Preview of the Big Dipper Clock rotating around the North Star."
+               style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
+        </li>
       </ul>
 
       <hr>
 
+
+      
       <div id="footer">
-        © Carina Lab, 2025. 
+        © Carina Lab, 2025. All Rights Reserved.
       </div>
     </div>
   </div>
