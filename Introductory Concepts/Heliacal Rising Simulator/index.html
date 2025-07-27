@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heliacal Rising Simulator (3D)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --xp-bg: #FFFFFF;
+            --xp-blue: #0A246A;
+            --xp-blue-gradient-start: #0055E7;
+            --xp-blue-gradient-end: #0A246A;
+            --xp-border-light: #FFFFFF;
+            --xp-border-dark: #808080;
+            --xp-border-inset-dark: #404040;
+            --xp-border-inset-light: #D4D0C8;
+            --accent-color: #e44;
+        }
+
+        body {
+            font-family: 'Tahoma', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #d4d0c8;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .window-container {
+            background-color: var(--xp-bg);
+            border: 1px solid var(--xp-border-dark);
+            border-top: 1px solid var(--xp-border-light);
+            border-left: 1px solid var(--xp-border-light);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+            padding: 3px;
+            width: 95vw;
+            max-width: 1400px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(to bottom, var(--xp-blue-gradient-start), var(--xp-blue-gradient-end));
+            color: white;
+            padding: 4px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        header h1 {
+            font-size: 1rem;
+            margin: 0;
+            text-shadow: 1px 1px #000;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        #current-time-display {
+            font-size: 0.8rem;
+            font-weight: normal;
+            text-shadow: 1px 1px #000;
+            margin-right: 15px;
+        }
+
+        .header-controls nav a {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+            background-color: var(--xp-bg);
+            border: 1px solid;
+            border-color: var(--xp-border-light) var(--xp-border-dark) var(--xp-border-dark) var(--xp-border-light);
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            font-weight: normal;
+        }
+        .header-controls nav a:active {
+            border-color: var(--xp-border-dark) var(--xp-border-light) var(--xp-border-light) var(--xp-border-dark);
+        }
+
+        .simulator-container {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            grid-template-rows: 1fr auto;
+            gap: 1rem;
+            padding: 0 1rem 1rem 1rem;
+            min-height: 0;
+        }
+
+        .left-panel {
+            background-color: #000;
+            border: 2px inset var(--xp-border-inset-light);
+            position: relative;
+            overflow: hidden;
+            grid-row: 1 / 2;
+        }
+        
+        #celestial-sphere-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+            max-height: 100%;
+            grid-row: 1 / 3;
+        }
+
+        .control-panel, .bottom-panel {
+            border: 1px solid var(--xp-border-dark);
+            border-radius: 0;
+            padding: 1.5rem 1rem 1rem 1rem;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .control-panel h2, .bottom-panel .panel-title {
+            position: absolute;
+            top: -0.7em;
+            left: 0.5rem;
+            background-color: var(--xp-bg);
+            padding: 0 0.5rem;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .form-group {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: #000;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 2px;
+            border: 1px solid;
+            border-color: var(--xp-border-inset-dark) var(--xp-border-light) var(--xp-border-light) var(--xp-border-inset-dark);
+            box-sizing: border-box;
+            background-color: white;
+            font-family: 'Tahoma', sans-serif;
+        }
+        
+        .input-group { display: flex; gap: 5px; }
+        .input-group input { flex-grow: 1; }
+        .input-group select { width: 60px; }
+        
+        .month-slider {
+            display: flex;
+            justify-content: space-between;
+            background-color: #fff;
+            border: 1px solid;
+            border-color: var(--xp-border-inset-dark) var(--xp-border-light) var(--xp-border-light) var(--xp-border-inset-dark);
+            padding: 2px;
+            position: relative;
+            margin-top: 5px;
+        }
+
+        .month-slider span {
+            font-size: 0.75rem;
+            padding: 2px;
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
+         .month-slider span:hover {
+            background-color: var(--xp-blue-gradient-start);
+            color: white;
+        }
+        
+        #month-arrow {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid var(--accent-color);
+            transform: translateX(-50%);
+            transition: left 0.2s ease;
+        }
+
+        .map-container { 
+            position: relative; 
+            margin-top: 5px; 
+            cursor: ns-resize;
+            border: 2px inset var(--xp-border-inset-light);
+            background-color: white;
+        }
+        .map-container img { width: 100%; display: block; }
+        #latitude-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-color);
+            top: 50%;
+            transition: top 0.2s ease;
+            pointer-events: none;
+        }
+        #latitude-line::before, #latitude-line::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            width: 0; height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        #latitude-line::before { left: -5px; border-right: 5px solid var(--accent-color); }
+        #latitude-line::after { right: -5px; border-left: 5px solid var(--accent-color); }
+        
+        .bottom-panel {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+        }
+        
+        .timeline-container { 
+            position: relative; 
+            height: 50px; 
+            cursor: pointer;
+        }
+        #timeline-bg {
+            width: 100%; height: 20px;
+            background: linear-gradient(to right, #000033, #666699, #ffffff, #ffffff, #666699, #000033);
+            border-radius: 0;
+            border: 1px solid var(--xp-border-dark);
+            position: absolute;
+            top: 15px;
+            overflow: hidden;
+        }
+        .star-visibility-bar { 
+            position: absolute; 
+            height: 100%; 
+            top: 0; 
+            background: #0055E7; 
+            opacity: 0.8;
+        }
+        #time-playhead { 
+            position: absolute; 
+            top: 10px; 
+            left: 50%; 
+            width: 2px; 
+            height: 30px; 
+            background-color: #e44d26; 
+            transform: translateX(-1px);
+            pointer-events: none;
+        }
+        .timeline-labels { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 0 5px; }
+        .timeline-labels.top { 
+            margin-bottom: 25px; 
+            text-align: center; 
+            display: block; 
+            color: #000;
+            height: 1em;
+        }
+        .timeline-labels.bottom { margin-top: 5px; }
+
+        .lock-controls { margin-top: 1rem; font-size: 0.8rem; }
+        .lock-controls label { margin-right: 10px; }
+        .lock-controls input { margin-right: 3px; vertical-align: middle; }
+
+        #tooltip {
+            position: absolute;
+            display: none;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            pointer-events: none;
+            font-size: 0.85rem;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+<div class="window-container">
+    <header>
+        <h1>Heliacal Rising Simulator</h1>
+        <div class="header-controls">
+            <div id="current-time-display"></div>
+            <nav>
+                <a id="start-animation-btn">Start</a>
+                <a id="stop-animation-btn">Stop</a>
+                <a id="reset-btn">Reset</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="simulator-container">
+        <div class="left-panel">
+             <canvas id="celestial-sphere-canvas"></canvas>
+             <div id="tooltip"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="control-panel">
+                <h2>Day of Year</h2>
+                <div class="form-group">
+                    <label for="day-of-year">day of year:</label>
+                    <div class="input-group">
+                        <input type="number" id="day-of-year" value="79" min="1" max="365">
+                        <select id="month">
+                            <option value="0">Jan</option><option value="1">Feb</option><option value="2" selected>Mar</option><option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option><option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option><option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="month-slider" id="month-slider-ui"><div id="month-arrow"></div></div>
+            </div>
+
+            <div class="control-panel">
+                <h2>Observer's Latitude</h2>
+                <div class="form-group">
+                    <label for="location-select">Select Capital:</label>
+                    <select id="location-select">
+                        <option value="New Delhi">Asia: New Delhi</option>
+                        <option value="Cairo">Africa: Cairo</option>
+                        <option value="Washington D.C.">N. America: Washington D.C.</option>
+                        <option value="Brasília">S. America: Brasília</option>
+                        <option value="Brussels">Europe: Brussels</option>
+                        <option value="Canberra">Australia: Canberra</option>
+                        <option value="McMurdo Station">Antarctica: McMurdo Station</option>
+                        <option value="custom">-- Custom --</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="latitude">latitude:</label>
+                    <div class="input-group">
+                         <input type="number" id="latitude" value="28.6" step="0.1">
+                         <select id="lat-hemisphere"><option value="N" selected>° N</option><option value="S">° S</option></select>
+                    </div>
+                </div>
+                <div class="map-container">
+                    <img src="../assets/map.png" alt="World Map" onerror="this.onerror=null;this.src='https://placehold.co/600x300/cccccc/ffffff?text=Map+Not+Found';">
+                    <div id="latitude-line"></div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h2>Star Position</h2>
+                <div class="form-group">
+                    <label for="star-select">Sirius</label>
+                    <select id="star-select">
+                        <option value="custom">-- select star --</option>
+                        <option value="Sirius" selected>Sirius</option>
+                        <option value="Polaris">Polaris</option>
+                        <option value="Betelgeuse">Betelgeuse</option>
+                        <option value="Vega">Vega</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="declination">declination:</label>
+                    <input type="number" id="declination" value="-16.7" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="right-ascension">rightAscension:</label>
+                    <input type="number" id="right-ascension" value="6.8" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-panel">
+             <h2 class="panel-title">Daylight Hours and Star Visibility Timeline</h2>
+            <div class="timeline-container" id="timeline-interactive-area">
+                <div class="timeline-labels top" id="star-visibility-label">star above horizon</div>
+                <div id="timeline-bg"></div>
+                <div id="time-playhead"></div>
+                <div class="timeline-labels bottom">
+                    <span>midnight</span><span>3AM</span><span>6AM</span><span>9AM</span><span>noon</span><span>3PM</span><span>6PM</span><span>9PM</span><span>midnight</span>
+                </div>
+            </div>
+             <div class="lock-controls" id="lock-controls">
+                lock the time of day to:
+                <label><input type="radio" name="lock" value="sunrise"> sunrise</label>
+                <label><input type="radio" name="lock" value="noon"> noon</label>
+                <label><input type="radio" name="lock" value="sunset"> sunset</label>
+                <label><input type="radio" name="lock" value="starRise"> star rise</label>
+                <label><input type="radio" name="lock" value="starSet"> star set</label>
+                <label><input type="radio" name="lock" value="unlock" checked> (don't lock)</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+    }
+  }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+    // --- DOM ELEMENTS ---
+    const dayOfYearInput = document.getElementById('day-of-year');
+    const monthSelect = document.getElementById('month');
+    const monthSliderUI = document.getElementById('month-slider-ui');
+    const monthArrow = document.getElementById('month-arrow');
+    const locationSelect = document.getElementById('location-select');
+    const latitudeInput = document.getElementById('latitude');
+    const latHemisphereSelect = document.getElementById('lat-hemisphere');
+    const latitudeLine = document.getElementById('latitude-line');
+    const starSelect = document.getElementById('star-select');
+    const declinationInput = document.getElementById('declination');
+    const rightAscensionInput = document.getElementById('right-ascension');
+    const starLabel = document.querySelector('label[for="star-select"]');
+    const starVisibilityLabel = document.getElementById('star-visibility-label');
+    const timelineBG = document.getElementById('timeline-bg');
+    const timePlayhead = document.getElementById('time-playhead');
+    const lockControls = document.getElementById('lock-controls');
+    const resetBtn = document.getElementById('reset-btn');
+    const startAnimationBtn = document.getElementById('start-animation-btn');
+    const stopAnimationBtn = document.getElementById('stop-animation-btn');
+    const currentTimeDisplay = document.getElementById('current-time-display');
+    const canvas = document.getElementById('celestial-sphere-canvas');
+    const mapContainer = document.querySelector('.map-container');
+    const tooltip = document.getElementById('tooltip');
+    const timelineInteractiveArea = document.getElementById('timeline-interactive-area');
+
+    // --- DATA & CONSTANTS ---
+    const STAR_DATA = {
+        'Sirius': { ra: 6.75, dec: -16.7 },
+        'Polaris': { ra: 2.5, dec: 89.25 },
+        'Betelgeuse': { ra: 5.92, dec: 7.41 },
+        'Vega': { ra: 18.62, dec: 38.78 }
+    };
+    const CAPITAL_DATA = {
+        'New Delhi': { lat: 28.61 },
+        'Cairo': { lat: 30.04 },
+        'Washington D.C.': { lat: 38.91 },
+        'Brasília': { lat: -15.79 },
+        'Brussels': { lat: 50.85 },
+        'Canberra': { lat: -35.28 },
+        'McMurdo Station': { lat: -77.85 }
+    };
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const CUMULATIVE_DAYS = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    const SPHERE_RADIUS = 10;
+    const AXIAL_TILT = 23.45 * Math.PI / 180; // Ecliptic tilt in radians
+
+    // --- STATE ---
+    let currentTimeOfDay = 12; // 0-24 hours
+    let lockedEvent = null;
+    let scene, camera, renderer, controls;
+    let horizon, celestialSphere, celestialEquator, ecliptic, celestialPoles;
+    let sun, star, sunPath, starPath;
+    let observer;
+    let textMeshes = [];
+    let font;
+    let isDraggingMap = false;
+    let isDraggingTime = false;
+    let animationFrameId = null; // For controlling animation loop
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    raycaster.params.Line.threshold = 0.2; // Makes hovering over lines easier
+
+    // --- INITIALIZATION ---
+    function init() {
+        setupThreeJS();
+        populateMonthSlider();
+        setupEventListeners();
+        setDefaultValues();
+        updateTimeDisplay(); // Initial call for time
+        setInterval(updateTimeDisplay, 1000); // Update time every second
+        loadFontAndCreateText();
+    }
+    
+    function setDefaultValues() {
+        // Set New Delhi as the default location
+        locationSelect.value = "New Delhi";
+        handleLocationChange(); // This will set latitude based on the capital
+
+        // Reset other values
+        monthSelect.value = "2";
+        dayOfYearInput.value = 79;
+        starSelect.value = "Sirius";
+        declinationInput.value = -16.7;
+        rightAscensionInput.value = 6.8;
+        starLabel.textContent = "Sirius";
+        document.querySelector('input[name="lock"][value="unlock"]').checked = true;
+        lockedEvent = null;
+        updateSimulation();
+    }
+    
+    function populateMonthSlider() {
+        MONTHS.forEach((month, i) => {
+            const span = document.createElement('span');
+            span.textContent = month;
+            span.dataset.monthIndex = i;
+            monthSliderUI.appendChild(span);
+        });
+    }
+
+    // --- THREE.JS SETUP ---
+    function setupThreeJS() {
+        // Scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Camera
+        const container = canvas.parentElement;
+        camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 5, 18);
+
+        // Renderer
+        renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // Controls
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 50;
+        controls.minDistance = 5;
+
+        // Lighting
+        scene.add(new THREE.AmbientLight(0xcccccc, 0.5));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(5, 10, 7.5);
+        scene.add(dirLight);
+
+        // --- Create Celestial Objects ---
+        const horizonGeom = new THREE.CircleGeometry(SPHERE_RADIUS, 64);
+        const horizonMat = new THREE.MeshBasicMaterial({ color: 0x228B22, side: THREE.DoubleSide });
+        horizon = new THREE.Mesh(horizonGeom, horizonMat);
+        horizon.rotation.x = -Math.PI / 2;
+        scene.add(horizon);
+
+        const sphereGeom = new THREE.SphereGeometry(SPHERE_RADIUS, 64, 32);
+        const sphereMat = new THREE.MeshBasicMaterial({ color: 0x87ceeb, wireframe: true, transparent: true, opacity: 0.2 });
+        celestialSphere = new THREE.Mesh(sphereGeom, sphereMat);
+        scene.add(celestialSphere);
+
+        celestialEquator = createTiltedCircle(0, 0x4682B4, false, 2);
+        celestialEquator.name = "Celestial Equator";
+        scene.add(celestialEquator);
+
+        ecliptic = createTiltedCircle(AXIAL_TILT, 0xFFD700, false, 2);
+        ecliptic.name = "Ecliptic (Sun's annual path)";
+        celestialEquator.add(ecliptic);
+        
+        const poleMat = new THREE.LineBasicMaterial({ color: 0x4682B4, linewidth: 2 });
+        const polePoints = [ new THREE.Vector3(0, -SPHERE_RADIUS * 1.2, 0), new THREE.Vector3(0, SPHERE_RADIUS * 1.2, 0) ];
+        const poleGeom = new THREE.BufferGeometry().setFromPoints(polePoints);
+        celestialPoles = new THREE.Line(poleGeom, poleMat);
+        celestialEquator.add(celestialPoles);
+
+        sun = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 1 }));
+        scene.add(sun);
+        star = new THREE.Mesh(new THREE.SphereGeometry(0.3, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        scene.add(star);
+
+        const placeholderGeom = new THREE.BufferGeometry();
+        sunPath = new THREE.Line(placeholderGeom, new THREE.LineDashedMaterial({ color: 0xffff00, dashSize: 0.2, gapSize: 0.1 }));
+        scene.add(sunPath);
+        starPath = new THREE.Line(placeholderGeom, new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.2, gapSize: 0.1 }));
+        scene.add(starPath);
+        
+        observer = createStickMan();
+        scene.add(observer);
+
+        window.addEventListener('resize', onWindowResize);
+        
+        animate();
+    }
+
+    function createTiltedCircle(tilt, color, dashed, width = 1) {
+        const points = [];
+        for (let i = 0; i <= 360; i++) {
+            const angle = i * Math.PI / 180;
+            points.push(new THREE.Vector3(Math.cos(angle) * SPHERE_RADIUS, Math.sin(angle) * SPHERE_RADIUS, 0));
+        }
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        let material;
+        if (dashed) {
+            material = new THREE.LineDashedMaterial({ color: color, dashSize: 0.2, gapSize: 0.1, linewidth: width });
+        } else {
+            material = new THREE.LineBasicMaterial({ color: color, linewidth: width });
+        }
+        const line = new THREE.Line(geometry, material);
+        line.computeLineDistances();
+        line.rotation.x = tilt;
+        return line;
+    }
+
+    function createCorrectedPathGeometry(declination, latitude) {
+        const decRad = declination * Math.PI / 180;
+        const latRad = latitude * Math.PI / 180;
+        const R = SPHERE_RADIUS;
+        const points = [];
+
+        for (let i = 0; i <= 360; i++) {
+            const H = (i - 180) * Math.PI / 180;
+            const cosH = Math.cos(H);
+            const sinH = Math.sin(H);
+            const cosDec = Math.cos(decRad);
+            const sinDec = Math.sin(decRad);
+            const cosLat = Math.cos(latRad);
+            const sinLat = Math.sin(latRad);
+
+            const x = -R * cosDec * sinH;
+            const y = R * (sinDec * sinLat + cosDec * cosLat * cosH);
+            const z = R * (-sinDec * cosLat + cosDec * sinLat * cosH);
+            points.push(new THREE.Vector3(x, y, z));
+        }
+        return new THREE.BufferGeometry().setFromPoints(points);
+    }
+
+    function createStickMan() {
+        const material = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+        const headMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const group = new THREE.Group();
+        let points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)];
+        let geom = new THREE.BufferGeometry().setFromPoints(points);
+        group.add(new THREE.Line(geom, material));
+        const headGeom = new THREE.CircleGeometry(0.25, 20);
+        const head = new THREE.Mesh(headGeom, headMat);
+        head.position.y = 1.25;
+        group.add(head);
+        points = [new THREE.Vector3(-0.5, 0.75, 0), new THREE.Vector3(0.5, 0.75, 0)];
+        geom = new THREE.BufferGeometry().setFromPoints(points);
+        group.add(new THREE.Line(geom, material));
+        points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(-0.4, -0.75, 0)];
+        geom = new THREE.BufferGeometry().setFromPoints(points);
+        group.add(new THREE.Line(geom, material));
+        points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.4, -0.75, 0)];
+        geom = new THREE.BufferGeometry().setFromPoints(points);
+        group.add(new THREE.Line(geom, material));
+        group.position.y = 0.75;
+        return group;
+    }
+
+    function loadFontAndCreateText() {
+        const loader = new FontLoader();
+        loader.load('https://cdn.jsdelivr.net/npm/three@0.157.0/examples/fonts/helvetiker_regular.typeface.json', (loadedFont) => {
+            font = loadedFont;
+            const textMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const options = { font: font, size: 0.5, height: 0.01 };
+            
+            const n = new THREE.Mesh(new TextGeometry('N', options), textMat);
+            n.position.set(0, 0.1, -SPHERE_RADIUS * 0.95);
+            n.geometry.center();
+            scene.add(n);
+            textMeshes.push(n);
+
+            const s = new THREE.Mesh(new TextGeometry('S', options), textMat);
+            s.position.set(0, 0.1, SPHERE_RADIUS * 0.95);
+            s.geometry.center();
+            s.rotation.y = Math.PI;
+            scene.add(s);
+            textMeshes.push(s);
+
+            const e = new THREE.Mesh(new TextGeometry('E', options), textMat);
+            e.position.set(SPHERE_RADIUS * 0.95, 0.1, 0);
+            e.geometry.center();
+            e.rotation.y = Math.PI / 2;
+            scene.add(e);
+            textMeshes.push(e);
+
+            const w = new THREE.Mesh(new TextGeometry('W', options), textMat);
+            w.position.set(-SPHERE_RADIUS * 0.95, 0.1, 0);
+            w.geometry.center();
+            w.rotation.y = -Math.PI / 2;
+            scene.add(w);
+            textMeshes.push(w);
+        });
+    }
+
+    function onWindowResize() {
+        const container = canvas.parentElement;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    function animate() {
+        animationFrameId = requestAnimationFrame(animate); // Store the frame ID
+        controls.update();
+        textMeshes.forEach(text => text.lookAt(camera.position));
+        renderer.render(scene, camera);
+    }
+    
+    // --- ANIMATION CONTROL ---
+    function startDayAnimation() {
+        stopDayAnimation(); // Ensure no multiple loops are running
+        function animateDay() {
+            let day = parseInt(dayOfYearInput.value);
+            day++;
+            if (day > 365) {
+                day = 1;
+            }
+            dayOfYearInput.value = day;
+            updateSimulation();
+            animationFrameId = requestAnimationFrame(animateDay);
+        }
+        animateDay();
+    }
+
+    function stopDayAnimation() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+        // Restart the main Three.js render loop if it was hijacked
+        if (!animationFrameId) {
+            animate();
+        }
+    }
+
+    // --- EVENT LISTENERS & HANDLERS ---
+    function setupEventListeners() {
+        const allControls = document.querySelectorAll('.right-panel input, .right-panel select, .bottom-panel input');
+        allControls.forEach(control => {
+            control.addEventListener('change', () => { stopDayAnimation(); updateSimulation(); });
+            control.addEventListener('input', () => { stopDayAnimation(); updateSimulation(); });
+        });
+        
+        monthSliderUI.addEventListener('click', (e) => {
+            if (e.target.tagName === 'SPAN') {
+                stopDayAnimation();
+                monthSelect.value = e.target.dataset.monthIndex;
+                handleMonthChange();
+                updateSimulation();
+            }
+        });
+        
+        resetBtn.addEventListener('click', () => { stopDayAnimation(); setDefaultValues(); });
+        startAnimationBtn.addEventListener('click', startDayAnimation);
+        stopAnimationBtn.addEventListener('click', stopDayAnimation);
+        locationSelect.addEventListener('change', () => { stopDayAnimation(); handleLocationChange(); });
+        starSelect.addEventListener('change', () => { stopDayAnimation(); handleStarChange(); });
+
+        mapContainer.addEventListener('mousedown', (e) => { stopDayAnimation(); isDraggingMap = true; updateLatitudeFromMap(e); });
+        document.addEventListener('mousemove', (e) => { if (isDraggingMap) updateLatitudeFromMap(e); });
+        document.addEventListener('mouseup', () => { isDraggingMap = false; });
+        mapContainer.addEventListener('touchstart', (e) => { stopDayAnimation(); isDraggingMap = true; updateLatitudeFromMap(e.touches[0]); }, { passive: true });
+        document.addEventListener('touchmove', (e) => { if (isDraggingMap) { e.preventDefault(); updateLatitudeFromMap(e.touches[0]); } }, { passive: false });
+        document.addEventListener('touchend', () => { isDraggingMap = false; });
+
+        timelineInteractiveArea.addEventListener('mousedown', (e) => { stopDayAnimation(); isDraggingTime = true; updateTimeFromTimeline(e); });
+        document.addEventListener('mousemove', (e) => { if (isDraggingTime) updateTimeFromTimeline(e); });
+        document.addEventListener('mouseup', () => { isDraggingTime = false; });
+        timelineInteractiveArea.addEventListener('touchstart', (e) => { stopDayAnimation(); isDraggingTime = true; updateTimeFromTimeline(e.touches[0]); }, { passive: true });
+        document.addEventListener('touchmove', (e) => { if (isDraggingTime) { e.preventDefault(); updateTimeFromTimeline(e.touches[0]); } }, { passive: false });
+        document.addEventListener('touchend', () => { isDraggingTime = false; });
+
+        canvas.addEventListener('mousemove', onCanvasMouseMove);
+    }
+    
+    function onCanvasMouseMove(event) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects([celestialEquator, ecliptic]);
+        if (intersects.length > 0) {
+            const intersectedObject = intersects[0].object;
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.clientX + 15 + 'px';
+            tooltip.style.top = event.clientY + 'px';
+            tooltip.textContent = intersectedObject.name;
+        } else {
+            tooltip.style.display = 'none';
+        }
+    }
+
+    function handleLocationChange() {
+        const selectedCapital = locationSelect.value;
+        if (selectedCapital === 'custom') return;
+        
+        const lat = CAPITAL_DATA[selectedCapital].lat;
+        latitudeInput.value = Math.abs(lat).toFixed(1);
+        latHemisphereSelect.value = (lat >= 0) ? 'N' : 'S';
+        updateSimulation();
+    }
+
+    function handleStarChange() {
+        if (starSelect.value === 'custom') {
+            starLabel.textContent = "Custom";
+            return;
+        }
+        const starData = STAR_DATA[starSelect.value];
+        declinationInput.value = starData.dec;
+        rightAscensionInput.value = starData.ra;
+        starLabel.textContent = starSelect.value;
+        updateSimulation();
+    }
+
+    function handleMonthChange() {
+        const monthIndex = parseInt(monthSelect.value);
+        const day = CUMULATIVE_DAYS[monthIndex] + Math.round(DAYS_IN_MONTH[monthIndex] / 2);
+        dayOfYearInput.value = day;
+    }
+
+    function updateLatitudeFromMap(e) {
+        const rect = mapContainer.getBoundingClientRect();
+        let y = e.clientY - rect.top;
+        y = Math.max(0, Math.min(rect.height, y));
+        const percent = y / rect.height;
+        const newLat = 90 - (percent * 180);
+        latitudeInput.value = Math.abs(newLat).toFixed(1);
+        latHemisphereSelect.value = newLat >= 0 ? 'N' : 'S';
+        locationSelect.value = 'custom';
+        updateSimulation();
+    }
+
+    function updateTimeFromTimeline(e) {
+        const rect = timelineInteractiveArea.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        const percent = Math.max(0, Math.min(1, x / rect.width));
+        currentTimeOfDay = percent * 24;
+        document.querySelector('input[name="lock"][value="unlock"]').checked = true;
+        updateSimulation();
+    }
+
+    // --- ASTRONOMICAL CALCULATIONS ---
+    function getSunEclipticPos(dayOfYear) {
+        const eclipticAngle = (dayOfYear / 365.25) * 2 * Math.PI;
+        const x = SPHERE_RADIUS * Math.cos(eclipticAngle);
+        const y = SPHERE_RADIUS * Math.sin(eclipticAngle);
+        return new THREE.Vector3(x, y, 0);
+    }
+
+    function eclipticToEquatorial(pos) {
+        const x = pos.x;
+        const y = pos.y * Math.cos(AXIAL_TILT);
+        const z = pos.y * Math.sin(AXIAL_TILT);
+        const ra = Math.atan2(y, x) * 12 / Math.PI + 12;
+        const dec = Math.atan2(z, Math.sqrt(x * x + y * y)) * 180 / Math.PI;
+        return { ra, dec };
+    }
+    
+    function calculateRiseSetTimes(latitude, declination, altitude = -0.833) {
+        const latRad = latitude * Math.PI / 180;
+        const decRad = declination * Math.PI / 180;
+        const altRad = altitude * Math.PI / 180;
+        const cosH = (Math.sin(altRad) - Math.sin(latRad) * Math.sin(decRad)) / (Math.cos(latRad) * Math.cos(decRad));
+        if (cosH > 1) return { rise: null, set: null, duration: 0 };
+        if (cosH < -1) return { rise: null, set: null, duration: 24 };
+        const H_hours = (Math.acos(cosH) * 180 / Math.PI) / 15;
+        return { rise: 12 - H_hours, set: 12 + H_hours, duration: 2 * H_hours };
+    }
+
+    // --- MAIN SIMULATION FUNCTION ---
+    function updateSimulation() {
+        if (!dayOfYearInput || !latitudeInput) return; // Guard against running before DOM is ready
+
+        const dayOfYear = parseInt(dayOfYearInput.value) || 0;
+        let latitude = parseFloat(latitudeInput.value) || 0;
+        if (latHemisphereSelect.value === 'S') latitude *= -1;
+        const starDec = parseFloat(declinationInput.value) || 0;
+        const starRa = parseFloat(rightAscensionInput.value) || 0;
+
+        const sunEclipticPos = getSunEclipticPos(dayOfYear);
+        const sunEquatorial = eclipticToEquatorial(sunEclipticPos);
+        const sunDec = sunEquatorial.dec;
+        const sunRa = sunEquatorial.ra;
+
+        const latRad = latitude * Math.PI / 180;
+        const celestialTilt = Math.PI / 2 - latRad;
+        celestialEquator.rotation.z = celestialTilt;
+        
+        sunPath.geometry.dispose();
+        sunPath.geometry = createCorrectedPathGeometry(sunDec, latitude);
+        sunPath.computeLineDistances();
+
+        starPath.geometry.dispose();
+        starPath.geometry = createCorrectedPathGeometry(starDec, latitude);
+        starPath.computeLineDistances();
+
+        const sunTimes = calculateRiseSetTimes(latitude, sunDec, -0.833);
+        const starTimes = calculateRiseSetTimes(latitude, starDec, 0);
+        
+        const transitOffset = starRa - sunRa;
+        const adjustedStarRise = starTimes.rise !== null ? (starTimes.rise + transitOffset + 48) % 24 : null;
+        const adjustedStarSet = starTimes.set !== null ? (starTimes.set + transitOffset + 48) % 24 : null;
+
+        if (!isDraggingTime) {
+            lockedEvent = document.querySelector('input[name="lock"]:checked').value;
+            if (lockedEvent !== 'unlock') {
+                switch(lockedEvent) {
+                    case 'sunrise': currentTimeOfDay = sunTimes.rise; break;
+                    case 'noon': currentTimeOfDay = 12; break;
+                    case 'sunset': currentTimeOfDay = sunTimes.set; break;
+                    case 'starRise': currentTimeOfDay = adjustedStarRise; break;
+                    case 'starSet': currentTimeOfDay = adjustedStarSet; break;
+                }
+                if (currentTimeOfDay === null) {
+                    currentTimeOfDay = 12;
+                    document.querySelector('input[name="lock"][value="unlock"]').checked = true;
+                }
+            }
+        }
+
+        const R = SPHERE_RADIUS;
+        const sunDecRad = sunDec * Math.PI / 180;
+        const starDecRad = starDec * Math.PI / 180;
+
+        const sunTransitTime = 12;
+        const sunHourAngle = ((currentTimeOfDay - sunTransitTime) * 15) * Math.PI / 180;
+        const cosSunH = Math.cos(sunHourAngle), sinSunH = Math.sin(sunHourAngle);
+        const cosSunDec = Math.cos(sunDecRad), sinSunDec = Math.sin(sunDecRad);
+        const cosLat = Math.cos(latRad), sinLat = Math.sin(latRad);
+        sun.position.set(
+            -R * cosSunDec * sinSunH,
+            R * (sinSunDec * sinLat + cosSunDec * cosLat * cosSunH),
+            R * (-sinSunDec * cosLat + cosSunDec * sinLat * cosSunH)
+        );
+
+        const starTransitTime = (12 + transitOffset + 48) % 24;
+        const starHourAngle = ((currentTimeOfDay - starTransitTime) * 15) * Math.PI / 180;
+        const cosStarH = Math.cos(starHourAngle), sinStarH = Math.sin(starHourAngle);
+        const cosStarDec = Math.cos(starDecRad), sinStarDec = Math.sin(starDecRad);
+        star.position.set(
+            -R * cosStarDec * sinStarH,
+            R * (sinStarDec * sinLat + cosStarDec * cosLat * cosStarH),
+            R * (-sinStarDec * cosLat + cosStarDec * sinLat * cosStarH)
+        );
+
+        updateTimelineUI(adjustedStarRise, adjustedStarSet, starTimes.duration);
+        updateMonthArrowUI(dayOfYear);
+        updateLatitudeLineUI(latitude);
+        updatePlayheadUI();
+    }
+    
+    // --- UI UPDATE FUNCTIONS ---
+    function updateTimeDisplay() {
+        const now = new Date();
+        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const timeString = now.toLocaleTimeString();
+        currentTimeDisplay.textContent = `${dateString} | ${timeString}`;
+    }
+
+    function updateTimelineUI(rise, set, duration) {
+        timelineBG.innerHTML = ''; // Clear previous bars
+        
+        if (duration >= 24) {
+            starVisibilityLabel.textContent = "Star is always visible (circumpolar)";
+        } else if (duration <= 0) {
+            starVisibilityLabel.textContent = "Star never rises";
+        } else {
+            starVisibilityLabel.textContent = "Star above horizon";
+            if (rise < set) {
+                const bar = document.createElement('div');
+                bar.className = 'star-visibility-bar';
+                bar.style.left = (rise / 24) * 100 + '%';
+                bar.style.width = (duration / 24) * 100 + '%';
+                timelineBG.appendChild(bar);
+            } else { 
+                const bar1 = document.createElement('div');
+                bar1.className = 'star-visibility-bar';
+                bar1.style.left = (rise / 24) * 100 + '%';
+                bar1.style.width = ((24 - rise) / 24) * 100 + '%';
+                timelineBG.appendChild(bar1);
+
+                const bar2 = document.createElement('div');
+                bar2.className = 'star-visibility-bar';
+                bar2.style.left = '0%';
+                bar2.style.width = (set / 24) * 100 + '%';
+                timelineBG.appendChild(bar2);
+            }
+        }
+    }
+    
+    function updatePlayheadUI() {
+        if (currentTimeOfDay !== null) {
+            timePlayhead.style.left = (currentTimeOfDay / 24) * 100 + '%';
+        }
+    }
+
+    function updateMonthArrowUI(dayOfYear) {
+        let currentMonth = 0;
+        for(let i = 0; i < CUMULATIVE_DAYS.length; i++) {
+            if (dayOfYear > CUMULATIVE_DAYS[i]) {
+                currentMonth = i;
+            }
+        }
+        monthSelect.value = currentMonth;
+
+        const arrowPos = ((dayOfYear-1) / 365) * 100;
+        monthArrow.style.left = `${arrowPos}%`;
+        monthSliderUI.querySelectorAll('span').forEach((span, i) => {
+            span.style.fontWeight = i === currentMonth ? 'bold' : 'normal';
+        });
+    }
+    
+    function updateLatitudeLineUI(latitude) {
+        const percent = (90 - latitude) / 180;
+        latitudeLine.style.top = `${percent * 100}%`;
+    }
+
+    // --- RUN ---
+    init();
+
+</script>
+
+</body>
+</html>
