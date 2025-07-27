@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>=
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Carina Lab | Interactive Astronomy Simulations for Education</title>
@@ -260,6 +260,15 @@
       Small-Angle Approximation Demonstrator
     </a>
     <img id="preview-saad" src="assets/saad.png"
+         style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
+  </li>
+  <li style="position: relative;">
+    <a href="Introductory Concepts/Big Dipper Clock/index.html"
+       onmouseover="document.getElementById('preview-bigdip').style.display='block'"
+       onmouseout="document.getElementById('preview-bigdip').style.display='none'">
+      Big Dipper Clock
+    </a>
+    <img id="preview-bigdip" src="assets/bigdip.png"
          style="display: none; position: absolute; left: 150px; top: -10px; width: 300px; border: 1px solid #ccc; box-shadow: 2px 2px 6px rgba(0,0,0,0.4); background: white; z-index: 10;" />
   </li>
 </ul>
