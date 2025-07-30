@@ -1,1 +1,3 @@
 This repository hosts a collection of astronomy simulation projects developed in JavaScript. We welcome contributions from astronomy enthusiasts and developers who are passionate about creating interactive, educational tools for learning and exploration. This work is conducted under the guidance of Suprit Sir, Assistant Professor at IIT Delhi.
+
+Open Source For Astronomy Education
